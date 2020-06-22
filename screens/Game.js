@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, Button } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, Button } from 'react-native';
 import { useLocation, useHistory } from 'react-router-native';
+import { Ionicons } from '@expo/vector-icons';
 import NumberContainer from '../components/NumberContainer';
 import Card from '../components/Card';
+import TitleText from '../components/Text/TitleText';
+import MainButton from '../components/MainButton';
+import BodyText from '../components/Text/BodyText';
 
 const generateRandomBetween = (min, max, exclude) => {
   min = Math.ceil(min);
@@ -15,19 +19,24 @@ const generateRandomBetween = (min, max, exclude) => {
   }
 };
 
-const Game = () => {
-  const location = useLocation();
-  const history = useHistory();
+const renderListItem = (item) => (
+  <View key={item} style={styles.list}>
+    <BodyText>{item}</BodyText>
+  </View>
+);
 
+const Game = () => {
   const min = useRef(1);
   const max = useRef(100);
   const guesses = useRef(0);
 
-  const [currentGuess, setCurrentGuess] = useState(generateRandomBetween(
-    min.current,
-    max.current,
-    location.state.selectedNumber)
-  );
+  const location = useLocation();
+  const history = useHistory();
+
+  const initialGuess = generateRandomBetween(min.current, max.current, location.state.selectedNumber);
+
+  const [currentGuess, setCurrentGuess] = useState(initialGuess);
+  const [pastGuesses, setPastGuesses] = useState([initialGuess]);
 
   useEffect(() => {
     if (currentGuess === location.state.selectedNumber) {
@@ -44,30 +53,37 @@ const Game = () => {
   const nextGuessHandler = direction => {
     if ((location.state.selectedNumber > currentGuess && direction === 'lower') || (location.state.selectedNumber < currentGuess && direction === 'greater')) {
       console.log('wrong advice');
-      Alert.alert('Don\'t lie', 'My Alert Msg', [{ text: 'Sorry', style: 'cancel' }]);
+      Alert.alert('Don\'t lie', 'We know this is opposite', [{ text: 'Sorry', style: 'cancel' }]);
       return;
     }
     if (direction === 'lower') {
-      console.log('should changemax');
       max.current = currentGuess;
     } else {
-      console.log('should changemin');
-      min.current = currentGuess;
+      min.current = currentGuess + 1;
     }
-    console.log(min, max);
     const nextNumber = generateRandomBetween(min.current, max.current);
     guesses.current += 1;
+    setPastGuesses(prevState => [nextNumber, ...prevState]);
     setCurrentGuess(nextNumber);
   };
 
   return (
     <View style={styles.screen}>
-      <Text>computer guess</Text>
+      <TitleText>Computer guessed</TitleText>
       <NumberContainer selectedNumber={currentGuess} />
       <Card customStyles={styles.buttonContainer}>
-        <Button title='LOWER' onPress={nextGuessHandler.bind(null, 'lower')} />
-        <Button title='GREATER' onPress={nextGuessHandler.bind(null, 'greater')} />
+        <MainButton onPress={nextGuessHandler.bind(null, 'lower')}>
+          <Ionicons name='md-remove' size={24} color='white' />
+        </MainButton>
+        <MainButton onPress={nextGuessHandler.bind(null, 'greater')}>
+          <Ionicons name='md-add' size={24} color='white' />
+        </MainButton>
       </Card>
+      <View style={styles.scrollView}>
+        <ScrollView>
+          {pastGuesses.map(renderListItem)}
+        </ScrollView>
+      </View>
     </View>
   );
 };
@@ -80,8 +96,22 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 20
+    justifyContent: 'space-between',
+    marginTop: 20,
+    width: '60%'
+  },
+  scrollView:{
+    flex: 1,
+    width: '70%'
+  },
+  list: {
+    borderColor: '#ccc',
+    borderWidth: 1,
+    padding: 15,
+    marginVertical: 10,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 });
 

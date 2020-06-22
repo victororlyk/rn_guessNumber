@@ -7,6 +7,9 @@ import Card from '../components/Card';
 import colors from '../constants/colors';
 import NumberInput from '../components/NumberInput';
 import NumberContainer from '../components/NumberContainer';
+import BodyText from '../components/Text/BodyText';
+import TitleText from '../components/Text/TitleText';
+import MainButton from '../components/MainButton';
 
 const validationSchema = yup.object().shape({
   guess: yup.number().min(1).max(99).required()
@@ -23,16 +26,18 @@ const StartGame = () => {
   if (confirmed) {
     confirmedOutput =
       <Card customStyles={styles.summaryContainer}>
-        <Text>selected number is </Text>
+        <BodyText>selected number is </BodyText>
         <NumberContainer selectedNumber={selectedNumber} />
-        <Button title="START GAME" onPress={() => history.push({ pathname: '/game', state: { selectedNumber } })} />
+        <MainButton onPress={() => history.push({ pathname: '/game', state: { selectedNumber } })}>
+          START GAME
+        </MainButton>
       </Card>;
   }
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.screen}>
-        <Text>Start a New Game!</Text>
+        <TitleText>Start a New Game!</TitleText>
         <Card customStyles={styles.inputContainer}>
           <Formik initialValues={{ guess: '' }} onSubmit={(values, { resetForm }) => {
             console.log(resetForm, 'here');
@@ -46,7 +51,7 @@ const StartGame = () => {
             }) => {
               return (
                 <>
-                  <Text style={styles.title}> Choose a number</Text>
+                  <BodyText> Choose a number</BodyText>
                   <NumberInput
                     customStyles={styles.input}
                     value={values.guess}
@@ -99,10 +104,6 @@ const styles = StyleSheet.create({
   input: {
     width: '80%',
     textAlign: 'center'
-  },
-  title: {
-    fontSize: 20,
-    marginVertical: 10
   },
   buttonsContainer: {
     flexDirection: 'row',
